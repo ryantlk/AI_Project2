@@ -23,19 +23,15 @@ import java.util.regex.Pattern;
  */
 public class Intelli_Grep {
 	
-	String paths[];
+	String testPath;
 
-	public Intelli_Grep(String path1, String path2, String path3, String testPath) {
-		paths = new String[4];
-		paths[0] = path1;
-		paths[1] = path2;
-		paths[2] = path3;
-		paths[3] = testPath;
+	public Intelli_Grep(String testPath) {
+		this.testPath = testPath;
 	}
 	
 	public void classify() throws IOException{
 		FileVisitor<Path> fileprocessor = new ProcessFile();
-		Files.walkFileTree(Paths.get(paths[3]), fileprocessor);
+		Files.walkFileTree(Paths.get(testPath), fileprocessor);
 	}
 	
 	private static final class ProcessFile extends SimpleFileVisitor<Path>{
