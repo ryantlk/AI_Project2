@@ -26,6 +26,6 @@ public class AI_Project {
 		//grepTest.classify();
 		
 		Naive_Bayes bayesTest = new Naive_Bayes(args[0], args[1], args[2], args[3]);
-		bayesTest.classify();
+		bayesTest.train();
 	}
 }
