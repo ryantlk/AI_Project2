@@ -14,10 +14,6 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Scanner;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,41 +23,15 @@ import java.util.regex.Pattern;
  */
 public class Intelli_Grep {
 	
-	String paths[];
+	String testPath;
 
-	public Intelli_Grep(String path1, String path2, String path3, String testPath) {
-		paths = new String[4];
-		paths[0] = path1;
-		paths[1] = path2;
-		paths[2] = path3;
-		paths[3] = testPath;
+	public Intelli_Grep(String testPath) {
+		this.testPath = testPath;
 	}
 	
 	public void classify() throws IOException{
-		ExecutorService pool = Executors.newFixedThreadPool(4);
-		for(String s : paths){
-			pool.submit(new Intelli_Grep_Thread(s));
-		}
-		pool.shutdown();
-	}
-	
-	private static final class Intelli_Grep_Thread implements Runnable{
-		
-		String ROOT;
-	
-		public Intelli_Grep_Thread(String ROOT){
-			this.ROOT = ROOT;
-		}
-		
-		@Override
-		public void run() {
-			FileVisitor<Path> fileProcessor = new ProcessFile();
-			try {
-				Files.walkFileTree(Paths.get(ROOT), fileProcessor);
-			} catch (IOException ex) {
-				Logger.getLogger(Intelli_Grep.class.getName()).log(Level.SEVERE, null, ex);
-			}
-		}
+		FileVisitor<Path> fileprocessor = new ProcessFile();
+		Files.walkFileTree(Paths.get(testPath), fileprocessor);
 	}
 	
 	private static final class ProcessFile extends SimpleFileVisitor<Path>{

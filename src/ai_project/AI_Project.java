@@ -22,7 +22,10 @@ public class AI_Project {
 			System.exit(1);
 		}
 		
-		Intelli_Grep grepTest = new Intelli_Grep(args[0], args[1], args[2], args[3]);
-		grepTest.classify();
+		//Intelli_Grep grepTest = new Intelli_Grep(args[3]);
+		//grepTest.classify();
+		
+		Naive_Bayes bayesTest = new Naive_Bayes(args[0], args[1], args[2], args[3]);
+		bayesTest.train();
 	}
 }
