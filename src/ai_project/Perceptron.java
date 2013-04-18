@@ -2,9 +2,10 @@ package ai_project;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Arrays;
-import java.util.*;
+import java.util.Set;
 
 
 public class Perceptron {
@@ -16,49 +17,47 @@ public class Perceptron {
 		String classification;
 		
 		public Perceptron(List<String> f,String s){
-			FilesToLearn=f;
+			FilesToLearn=new ArrayList<String>();
+			for(String z: f){
+				FilesToLearn.add(z);
+			}
 			classification=s;
 		}
 		
 		public void preprocess(){
 			//first step do normal preprocessing
+			List<String> files2=new ArrayList<String>();
 			for(String f:FilesToLearn){
 				//conver all non alpha,non space chars to spaces
-				char [] fr=f.toCharArray();
-				for(int i=0;i<fr.length;i++){
-					if(!(Character.isLetter(fr[i]))&&fr[i]!=' '){
-						fr[i]=' ';
-					}
-				}
-				f=String.valueOf(fr);
-				//set everything to lower case
 				f=f.toLowerCase();
-				
-				//parse everything at space, and put everything together, this will remove extra spaces
-				String [] g=f.split(" ");
-				f=g[0];
-				boolean hh=false;
-				for(String n:g){
-					if(hh){
-						f.concat(" "+n);
-					}
-					hh=true;
-				}
+				f=f.replaceAll("[^a-zA-Z]", " ");
+				f=f.replace("\n"," ");
+				String regex = "\\s{2,}"; 
+				f = f.replaceAll(regex, " "); 
+				f=f.trim();
+				files2.add(f);
+			}
+			FilesToLearn.clear();
+			for(String f: files2){
+				FilesToLearn.add(f);
 			}
 			//get word counts
-			boolean toadd=true;
-			List<wordRecord> bagOfWords=new ArrayList<wordRecord>();
+			Set<wordRecord> bagOfWords=new HashSet<wordRecord>();
 			for(String f:FilesToLearn){
-				for(wordRecord z:bagOfWords){
-					if(f==z.word){
-						toadd=false;
-						z.count++;
+				String [] g=f.split(" ");
+				for(String hh:g){
+					boolean added=bagOfWords.add(new wordRecord(hh));
+					if(!added){
+						for(wordRecord h:bagOfWords){
+							if(h.word==hh){
+								bagOfWords.remove(h);
+								h.count++;
+								bagOfWords.add(h);
+								break;
+							}
+						}
 					}
 				}
-				if(toadd){
-					bagOfWords.add(new wordRecord(f));
-				}
-				toadd=true;
 			}
 			//calculate total words
 			int totalCount=0;
@@ -112,7 +111,7 @@ public class Perceptron {
 			}
 			if(error!=0){
 				for(int i=0;i<weights.length;i++){
-					weights[i]=weights[i]+alpha*error+wordList[i].countP;
+					weights[i]=weights[i]+alpha*error*wordList[i].countP;
 				}
 			}
 		}
@@ -122,6 +121,7 @@ public class Perceptron {
 			for(int i=0;i<wordList.length;i++){
 				sum+=weights[i]*wordList[i].countP;
 			}
+			sum+=1;
 			if(sum>0){
 				return true;
 			}

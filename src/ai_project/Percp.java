@@ -1,6 +1,7 @@
 package ai_project;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
@@ -19,45 +20,57 @@ public class Percp {
 			h=new java.io.File("./data/DR/"+f);
 			try {
 				Scanner d=new Scanner(h);
-				String st=d.nextLine();
+				String st=null;
+				if(d.hasNext())
+					st=d.nextLine();
 				while(d.hasNextLine()){
-					st.concat(d.nextLine());
+					st=st.concat(" "+d.nextLine());
 				}
-				Dr.add(st);
+				if(st!=null)
+					Dr.add(st);
 				d.close();
 			} catch (FileNotFoundException e) {
 			}
 		}
+		System.out.println("got dr");
 		h=new java.io.File("./data/DT");
 		fileS=h.list();
 		for(String f:fileS){
 			h=new java.io.File("./data/DT/"+f);
 			try {
 				Scanner d=new Scanner(h);
-				String st=d.nextLine();
+				String st=null;
+				if(d.hasNext())
+					st=d.nextLine();
 				while(d.hasNextLine()){
-					st.concat(d.nextLine());
+					st=st.concat(" "+d.nextLine());
 				}
-				Dt.add(st);
+				if(st!=null)
+					Dt.add(st);
 				d.close();
 			} catch (FileNotFoundException e) {
 			}
 		}
+		System.out.println("got dt");
 		h=new java.io.File("./data/L");
 		fileS=h.list();
 		for(String f:fileS){
 			h=new java.io.File("./data/L/"+f);
 			try {
 				Scanner d=new Scanner(h);
-				String st=d.nextLine();
+				String st=null;
+				if(d.hasNext())
+					st=d.nextLine();
 				while(d.hasNextLine()){
-					st.concat(d.nextLine());
+					st=st.concat(" "+d.nextLine());
 				}
-				L.add(st);
+				if(st!=null)
+					L.add(st);
 				d.close();
 			} catch (FileNotFoundException e) {
 			}
 		}
+		System.out.println("got l");
 		List<Perceptron> myPerceptrons=new ArrayList<Perceptron>();
 		Perceptron drp=new Perceptron(Dr,"Dr"); 
 		myPerceptrons.add(drp);
@@ -67,6 +80,7 @@ public class Percp {
 		myPerceptrons.add(lp);
 		for(Perceptron f: myPerceptrons){
 			f.preprocess();
+			System.out.println("preepocessed");
 		}
 		boolean toadd=true;
 		//construct the full list
@@ -83,6 +97,7 @@ public class Percp {
 				toadd=true;
 			}
 		}
+		System.out.println("bag 2 made");
 		for(Perceptron f: myPerceptrons){
 			f.setupbag(bagOfWords);
 		}
@@ -106,7 +121,7 @@ public class Percp {
 						totalCount+=1;
 					}
 					for(wordRecord d:b){
-						d.countP=((float)d.countP)/totalCount;
+						d.countP=((float)d.count)/totalCount;
 					}
 					myPerceptrons.get(0).train(b,f.classification, alpha);
 					myPerceptrons.get(1).train(b,f.classification, alpha);
@@ -117,35 +132,56 @@ public class Percp {
 				}
 				
 			}
-			alpha*=.01;
+			alpha*=.99;
 		}
-		if(args.length>1){
+		System.out.println("Percptron Trained");
+		if(args.length>0){
+			System.out.println(args[0]);
 			java.io.File testD;
-			testD=new java.io.File(args[1]);
+			testD=new java.io.File(args[0]);
+			List <String> theFiles=new ArrayList<String>();
 			if(testD.isDirectory()){
 				List <String> testF=new ArrayList<String>();
 				String [] testFiles=testD.list();
 				for(String f:testFiles){
-					testD=new java.io.File(args[1]+"/"+f);
+					testD=new java.io.File(args[0]+"/"+f);
 					try {
-						String st;
+						String st=null;
 						Scanner s1=new Scanner(testD);
-						st=s1.nextLine();
+						if(s1.hasNext())
+							st=s1.nextLine();
 						while(s1.hasNextLine()){
 							st.concat(s1.nextLine());
 						}
-						testF.add(st);
+						if(st!=null){
+							testF.add(st);
+							theFiles.add(f);
+						}
 						s1.close();
 					} catch (FileNotFoundException e) {
 					}
 				}
 				PrintWriter p1=null;
+				java.io.File kl=new java.io.File("./data/results.txt");
 				try {
-					 p1=new PrintWriter("./data/results.txt");
+					kl.createNewFile();
+					 p1=new PrintWriter(kl);
 				} catch (FileNotFoundException e) {
+					System.out.println("no file");
+					System.exit(1);
+				} catch (IOException e) {
+					System.out.println("no file");
+					System.exit(1);
 				}
+				int fileN=0;
 				Perceptron testP=new Perceptron(testF,"ts");
 				for(String f:testP.FilesToLearn){
+					f=f.toLowerCase();
+					f=f.replaceAll("[^a-zA-Z]", " ");
+					f=f.replace("\n"," ");
+					String regex = "\\s{2,}"; 
+					f = f.replaceAll(regex, " "); 
+					f=f.trim();
 					String [] g=f.split(" ");
 					int totalCount=0;
 					for(String d:g){
@@ -157,33 +193,33 @@ public class Percp {
 						totalCount+=1;
 					}
 					for(wordRecord d:b){
-						d.countP=((float)d.countP)/totalCount;
+						d.countP=((float)d.count)/totalCount;
 					}
 					boolean drV=myPerceptrons.get(0).vote(b);
 					boolean dtV=myPerceptrons.get(1).vote(b);
 					boolean lV=myPerceptrons.get(2).vote(b);
 					if(drV&&!dtV&!lV){
-						p1.println(f+" "+"dr");
+						p1.println(theFiles.get(fileN)+" "+"dr");
 					}
 					else if(!drV&&dtV&!lV){
-						p1.println(f+" "+"dt");
+						p1.println(theFiles.get(fileN)+" "+"dt");
 					}
 					else if(!drV&&!dtV&&lV){
-						p1.println(f+" "+"l");
+						p1.println(theFiles.get(fileN)+" "+"l");
 					}
 					else{
 						while(true){
 							int ranChoice=(int)(Math.random()*3.0);
 							if(ranChoice==1&&drV){
-								p1.println(f+" "+"dr");
+								p1.println(theFiles.get(fileN)+" "+"dr");
 								break;
 							}
 							else if(ranChoice==2&&dtV){
-								p1.println(f+" "+"dt");
+								p1.println(theFiles.get(fileN)+" "+"dt");
 								break;
 							}
-							else if(ranChoice==3&&lV){
-								p1.println(f+" "+"l");
+							else if(lV){
+								p1.println(theFiles.get(fileN)+" "+"l");
 								break;
 							}
 						}
@@ -191,7 +227,7 @@ public class Percp {
 					for(wordRecord j:b){
 						j.count=0;
 					}
-					
+					fileN++;	
 				}
 				p1.close();
 			}

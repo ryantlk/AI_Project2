@@ -8,6 +8,7 @@ public class wordRecord {
 		public wordRecord(String w){
 			count=1; 
 			word=w;
+			countP=0;
 		}
 
 }
