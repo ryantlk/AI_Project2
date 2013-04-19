@@ -80,14 +80,13 @@ public class Percp {
 		myPerceptrons.add(lp);
 		for(Perceptron f: myPerceptrons){
 			f.preprocess();
-			System.out.println("preepocessed");
 		}
 		boolean toadd=true;
 		//construct the full list
 		for(Perceptron f: myPerceptrons){
 			for(wordRecord z:f.bagOfWords2){
 				for(String g:bagOfWords){
-					if(g==z.word){
+					if(g.equalsIgnoreCase(z.word)){
 						toadd=false;
 					}
 				}
@@ -97,7 +96,6 @@ public class Percp {
 				toadd=true;
 			}
 		}
-		System.out.println("bag 2 made");
 		for(Perceptron f: myPerceptrons){
 			f.setupbag(bagOfWords);
 		}
@@ -114,7 +112,7 @@ public class Percp {
 					int totalCount=0;
 					for(String d:g){
 						for(wordRecord q:b){
-							if(d==q.word){
+							if(d.equalsIgnoreCase(q.word)){
 								q.count+=1;
 							}
 						}
@@ -186,8 +184,9 @@ public class Percp {
 					int totalCount=0;
 					for(String d:g){
 						for(wordRecord q:b){
-							if(d==q.word){
+							if(d.equalsIgnoreCase(q.word)){
 								q.count+=1;
+								break;
 							}
 						}
 						totalCount+=1;
@@ -198,29 +197,88 @@ public class Percp {
 					boolean drV=myPerceptrons.get(0).vote(b);
 					boolean dtV=myPerceptrons.get(1).vote(b);
 					boolean lV=myPerceptrons.get(2).vote(b);
-					if(drV&&!dtV&!lV){
+					if(drV&&!dtV&&!lV){
 						p1.println(theFiles.get(fileN)+" "+"dr");
 					}
-					else if(!drV&&dtV&!lV){
+					else if(!drV&&dtV&&!lV){
 						p1.println(theFiles.get(fileN)+" "+"dt");
 					}
 					else if(!drV&&!dtV&&lV){
 						p1.println(theFiles.get(fileN)+" "+"l");
 					}
 					else{
-						while(true){
-							int ranChoice=(int)(Math.random()*3.0);
-							if(ranChoice==1&&drV){
+						int ranChoice=(int)(Math.random()*3.0);
+						System.out.println(ranChoice);
+						if(ranChoice==1){
+							if(drV){
 								p1.println(theFiles.get(fileN)+" "+"dr");
-								break;
 							}
-							else if(ranChoice==2&&dtV){
+							else{
+								ranChoice=(int)(Math.random()*2);
+								if(ranChoice==2){
+									if(dtV){
+										p1.println(theFiles.get(fileN)+" "+"dt");
+									}
+									else{
+										p1.println(theFiles.get(fileN)+" "+"l");
+									}
+								}
+								else{
+									if(lV){
+										p1.println(theFiles.get(fileN)+" "+"l");
+									}
+									else{
+										p1.println(theFiles.get(fileN)+" "+"dt");
+									}
+								}
+							}
+						}
+						else if(ranChoice==2){
+							if(dtV){
 								p1.println(theFiles.get(fileN)+" "+"dt");
-								break;
 							}
-							else if(lV){
+							else{
+								ranChoice=(int)(Math.random()*2);
+								if(ranChoice==2){
+									if(drV){
+										p1.println(theFiles.get(fileN)+" "+"dr");
+									}
+									else{
+										p1.println(theFiles.get(fileN)+" "+"l");
+									}
+								}
+								else{
+									if(lV){
+										p1.println(theFiles.get(fileN)+" "+"l");
+									}
+									else{
+										p1.println(theFiles.get(fileN)+" "+"dr");
+									}
+								}
+							}
+						}
+						else{
+							if(lV){
 								p1.println(theFiles.get(fileN)+" "+"l");
-								break;
+							}
+							else{
+								ranChoice=(int)(Math.random()*2);
+								if(ranChoice==2){
+									if(dtV){
+										p1.println(theFiles.get(fileN)+" "+"dt");
+									}
+									else{
+										p1.println(theFiles.get(fileN)+" "+"dr");
+									}
+								}
+								else{
+									if(drV){
+										p1.println(theFiles.get(fileN)+" "+"dr");
+									}
+									else{
+										p1.println(theFiles.get(fileN)+" "+"dt");
+									}
+								}
 							}
 						}
 					}

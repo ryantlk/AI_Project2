@@ -42,28 +42,32 @@ public class Perceptron {
 				FilesToLearn.add(f);
 			}
 			//get word counts
-			Set<wordRecord> bagOfWords=new HashSet<wordRecord>();
+			boolean toadd=true;
+			List<wordRecord> bagOfWords=new ArrayList<wordRecord>();
 			for(String f:FilesToLearn){
 				String [] g=f.split(" ");
 				for(String hh:g){
-					boolean added=bagOfWords.add(new wordRecord(hh));
-					if(!added){
-						for(wordRecord h:bagOfWords){
-							if(h.word==hh){
-								bagOfWords.remove(h);
-								h.count++;
-								bagOfWords.add(h);
-								break;
-							}
+					for(wordRecord z:bagOfWords){
+						if(z.word.equals(hh)){
+							toadd=false;
+							z.count++;
+							break;
 						}
 					}
+					
+					if(toadd){
+						bagOfWords.add(new wordRecord(hh));
+					}
+					toadd=true;
 				}
 			}
 			//calculate total words
 			int totalCount=0;
 			for(wordRecord f:bagOfWords){
 				totalCount+=f.count;
+				//System.out.println(f.word);
 			}
+			//System.exit(1);
 			total=totalCount;
 			//get p(w/c)
 			for(wordRecord f:bagOfWords){
@@ -77,12 +81,12 @@ public class Perceptron {
 			}
 			Arrays.sort(pp,new Comparator<Object>(){ public int compare(Object o1,Object o2){
 						wordRecord w1=(wordRecord)o1; wordRecord w2=(wordRecord) o2;
-								if(w1.countP>w2.countP)return 1; else if(w1.countP>w2.countP) return -1;
-								else return 0;};});
+								if(w1.countP<w2.countP)return 1; else if(w1.countP>w2.countP) return -1;
+								else return w1.word.compareTo(w2.word);};});
 			//grab to 20 words, or as many as we can
 			int wordC=0;
 			bagOfWords2=new ArrayList<wordRecord>();
-			for(int i=pp.length-1;i>=0;i--){
+			for(int i=0;i<pp.length;i++){
 				bagOfWords2.add(pp[i]);
 				wordC++;
 				if(wordC==20)
@@ -103,11 +107,11 @@ public class Perceptron {
 		public void train(wordRecord[] wordList, String c, double alpha){
 			boolean results=vote(wordList);
 			int error=0;
-			if(results&&(c!=classification)){
-				error=1;	
+			if(results&&(!c.endsWith(classification))){
+				error=-1;	
 			}
-			if(!results&&(c==classification)){
-				error=-1;
+			if(!results&&(c.equals(classification))){
+				error=1;
 			}
 			if(error!=0){
 				for(int i=0;i<weights.length;i++){
