@@ -1,5 +1,6 @@
 package ai_project;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -8,65 +9,68 @@ import java.util.*;
 
 public class Percp {
 	
-	public static void main(String[] args) {
+	public Percp(String learning,String testDir) {
 		List<String> Dr=new ArrayList<String>();
 		List<String> Dt=new ArrayList<String>();
 		List<String> L=new ArrayList<String>();
 		List<String>bagOfWords=new ArrayList<String>();
-		java.io.File h=new java.io.File("./data/DR");
+		java.io.File h=new java.io.File(learning+"/DR");
 		wordRecord [] b;
 		String [] fileS=h.list();
 		for(String f:fileS){
-			h=new java.io.File("./data/DR/"+f);
+			h=new java.io.File(learning+"/DR/"+f);
 			try {
-				Scanner d=new Scanner(h);
-				String st=null;
-				if(d.hasNext())
-					st=d.nextLine();
-				while(d.hasNextLine()){
-					st=st.concat(" "+d.nextLine());
-				}
-				if(st!=null)
+				FileInputStream d=new FileInputStream(h);
+				byte [] ss;
+				ss=new byte[(int)h.length()];
+				try {
+					d.read(ss);
+					String st=new String(ss);
 					Dr.add(st);
-				d.close();
+					d.close();
+				} catch (IOException e) {
+				}
+				
 			} catch (FileNotFoundException e) {
 			}
 		}
 		System.out.println("got dr");
-		h=new java.io.File("./data/DT");
+		h=new java.io.File(learning+"/DT");
 		fileS=h.list();
 		for(String f:fileS){
-			h=new java.io.File("./data/DT/"+f);
+			h=new java.io.File(learning+"/DT/"+f);
 			try {
-				Scanner d=new Scanner(h);
-				String st=null;
-				if(d.hasNext())
-					st=d.nextLine();
-				while(d.hasNextLine()){
-					st=st.concat(" "+d.nextLine());
-				}
-				if(st!=null)
+				FileInputStream d=new FileInputStream(h);
+				byte [] ss;
+				ss=new byte[(int)h.length()];
+				try {
+					d.read(ss);
+					String st=new String(ss);
 					Dt.add(st);
-				d.close();
+					d.close();
+				} catch (IOException e) {
+				}
+				
 			} catch (FileNotFoundException e) {
 			}
 		}
 		System.out.println("got dt");
-		h=new java.io.File("./data/L");
+		h=new java.io.File(learning+"/L");
 		fileS=h.list();
 		for(String f:fileS){
-			h=new java.io.File("./data/L/"+f);
+			h=new java.io.File(learning+"/L/"+f);
 			try {
-				Scanner d=new Scanner(h);
-				String st=null;
-				if(d.hasNext())
-					st=d.nextLine();
-				while(d.hasNextLine()){
-					st=st.concat(" "+d.nextLine());
-				}
-				if(st!=null)
+				FileInputStream d=new FileInputStream(h);
+				byte [] ss;
+				ss=new byte[(int)h.length()];
+				try {
+					d.read(ss);
+					String st=new String(ss);
 					L.add(st);
-				d.close();
+					d.close();
+				} catch (IOException e) {
+				}
+				
 			} catch (FileNotFoundException e) {
 			}
 		}
@@ -133,34 +137,33 @@ public class Percp {
 			alpha*=.99;
 		}
 		System.out.println("Percptron Trained");
-		if(args.length>0){
-			System.out.println(args[0]);
+		if(testDir.length()>0){
 			java.io.File testD;
-			testD=new java.io.File(args[0]);
+			testD=new java.io.File(testDir);
 			List <String> theFiles=new ArrayList<String>();
 			if(testD.isDirectory()){
 				List <String> testF=new ArrayList<String>();
 				String [] testFiles=testD.list();
 				for(String f:testFiles){
-					testD=new java.io.File(args[0]+"/"+f);
+					testD=new java.io.File(testDir+"/"+f);
 					try {
-						String st=null;
-						Scanner s1=new Scanner(testD);
-						if(s1.hasNext())
-							st=s1.nextLine();
-						while(s1.hasNextLine()){
-							st.concat(s1.nextLine());
-						}
-						if(st!=null){
+						FileInputStream d=new FileInputStream(testD);
+						byte [] ss;
+						ss=new byte[(int)testD.length()];
+						try {
+							d.read(ss);
+							String st=new String(ss);
 							testF.add(st);
 							theFiles.add(f);
+							d.close();
+						} catch (IOException e) {
 						}
-						s1.close();
+						
 					} catch (FileNotFoundException e) {
 					}
 				}
 				PrintWriter p1=null;
-				java.io.File kl=new java.io.File("./data/results.txt");
+				java.io.File kl=new java.io.File("./results.txt");
 				try {
 					kl.createNewFile();
 					 p1=new PrintWriter(kl);
@@ -198,85 +201,84 @@ public class Percp {
 					boolean dtV=myPerceptrons.get(1).vote(b);
 					boolean lV=myPerceptrons.get(2).vote(b);
 					if(drV&&!dtV&&!lV){
-						p1.println(theFiles.get(fileN)+" "+"dr");
+						p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"dr");
 					}
 					else if(!drV&&dtV&&!lV){
-						p1.println(theFiles.get(fileN)+" "+"dt");
+						p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"dt");
 					}
 					else if(!drV&&!dtV&&lV){
-						p1.println(theFiles.get(fileN)+" "+"l");
+						p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"l");
 					}
 					else{
 						int ranChoice=(int)(Math.random()*3.0);
-						System.out.println(ranChoice);
 						if(ranChoice==1){
 							if(drV){
-								p1.println(theFiles.get(fileN)+" "+"dr");
+								p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"dr");
 							}
 							else{
 								ranChoice=(int)(Math.random()*2);
-								if(ranChoice==2){
+								if(ranChoice==1){
 									if(dtV){
-										p1.println(theFiles.get(fileN)+" "+"dt");
+										p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"dt");
 									}
 									else{
-										p1.println(theFiles.get(fileN)+" "+"l");
+										p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"l");
 									}
 								}
 								else{
 									if(lV){
-										p1.println(theFiles.get(fileN)+" "+"l");
+										p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"l");
 									}
 									else{
-										p1.println(theFiles.get(fileN)+" "+"dt");
+										p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"dt");
 									}
 								}
 							}
 						}
 						else if(ranChoice==2){
 							if(dtV){
-								p1.println(theFiles.get(fileN)+" "+"dt");
+								p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"dt");
 							}
 							else{
 								ranChoice=(int)(Math.random()*2);
-								if(ranChoice==2){
+								if(ranChoice==1){
 									if(drV){
-										p1.println(theFiles.get(fileN)+" "+"dr");
+										p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"dr");
 									}
 									else{
-										p1.println(theFiles.get(fileN)+" "+"l");
+										p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"l");
 									}
 								}
 								else{
 									if(lV){
-										p1.println(theFiles.get(fileN)+" "+"l");
+										p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"l");
 									}
 									else{
-										p1.println(theFiles.get(fileN)+" "+"dr");
+										p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"dr");
 									}
 								}
 							}
 						}
 						else{
 							if(lV){
-								p1.println(theFiles.get(fileN)+" "+"l");
+								p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"l");
 							}
 							else{
 								ranChoice=(int)(Math.random()*2);
-								if(ranChoice==2){
+								if(ranChoice==1){
 									if(dtV){
-										p1.println(theFiles.get(fileN)+" "+"dt");
+										p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"dt");
 									}
 									else{
-										p1.println(theFiles.get(fileN)+" "+"dr");
+										p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"dr");
 									}
 								}
 								else{
 									if(drV){
-										p1.println(theFiles.get(fileN)+" "+"dr");
+										p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"dr");
 									}
 									else{
-										p1.println(theFiles.get(fileN)+" "+"dt");
+										p1.println("Perceptron v1 "+theFiles.get(fileN)+" "+"dt");
 									}
 								}
 							}

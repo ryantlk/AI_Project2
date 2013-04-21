@@ -107,10 +107,10 @@ public class Perceptron {
 		public void train(wordRecord[] wordList, String c, double alpha){
 			boolean results=vote(wordList);
 			int error=0;
-			if(results&&(!c.endsWith(classification))){
+			if(results&&(!c.equalsIgnoreCase(classification))){
 				error=-1;	
 			}
-			if(!results&&(c.equals(classification))){
+			if(!results&&(c.equalsIgnoreCase(classification))){
 				error=1;
 			}
 			if(error!=0){
