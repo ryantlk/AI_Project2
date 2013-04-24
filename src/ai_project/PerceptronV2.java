@@ -14,6 +14,7 @@ public class PerceptronV2 {
 		String [] myBag;
 		int total=0;
 		double [] weights;
+		double biasWeight;
 		String classification;
 		String [] CommonStrings={"the","be","to","of","and","a","in","that","have",
 				"i","it","for","not","on","with","he","as","you","do","at","this",
@@ -118,9 +119,9 @@ public class PerceptronV2 {
 				stringList.remove(f);
 			}
 			bagOfWords2=new ArrayList<wordRecord>();
-			bagOfWords2.add(new wordRecord("lien"));
-			bagOfWords2.add(new wordRecord("trust"));
-			bagOfWords2.add(new wordRecord("reconveyance"));
+			//bagOfWords2.add(new wordRecord("lien"));
+			//bagOfWords2.add(new wordRecord("trust"));
+			//bagOfWords2.add(new wordRecord("reconveyance"));
 			//stringList.remove("lien");
 			//stringList.remove("trust");
 			//stringList.remove("reconveyance");
@@ -140,6 +141,7 @@ public class PerceptronV2 {
 				myBag[i]=bag.get(i);
 				weights[i]=0.6;
 			}
+			biasWeight=0.6;
 		}
 		
 		public void train(wordRecord[] wordList, String c, double alpha){
@@ -155,15 +157,16 @@ public class PerceptronV2 {
 				for(int i=0;i<weights.length;i++){
 					weights[i]=weights[i]+alpha*error*wordList[i].countP;
 				}
+				biasWeight=biasWeight+alpha*error;
 			}
 		}
 		
 		public boolean vote(wordRecord [] wordList){
-			int sum=0;
+			double sum=0;
 			for(int i=0;i<wordList.length;i++){
 				sum+=weights[i]*((double)wordList[i].countP);
 			}
-			sum+=1;
+			sum+=biasWeight;
 			if(sum>0){
 				return true;
 			}

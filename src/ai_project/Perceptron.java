@@ -14,6 +14,7 @@ public class Perceptron {
 		String [] myBag;
 		int total=0;
 		double [] weights;
+		double biasWeight;
 		String classification;
 		
 		public Perceptron(List<String> f,String s){
@@ -102,6 +103,7 @@ public class Perceptron {
 				myBag[i]=bag.get(i);
 				weights[i]=0.6;
 			}
+			biasWeight=0.6;
 		}
 		
 		public void train(wordRecord[] wordList, String c, double alpha){
@@ -117,6 +119,7 @@ public class Perceptron {
 				for(int i=0;i<weights.length;i++){
 					weights[i]=weights[i]+alpha*error*wordList[i].countP;
 				}
+				biasWeight=biasWeight+alpha*error;
 			}
 		}
 		
@@ -125,7 +128,7 @@ public class Perceptron {
 			for(int i=0;i<wordList.length;i++){
 				sum+=weights[i]*wordList[i].countP;
 			}
-			sum+=1;
+			sum+=(biasWeight);
 			if(sum>0){
 				return true;
 			}
