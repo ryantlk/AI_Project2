@@ -18,9 +18,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -51,11 +54,11 @@ public class Naive_Bayes {
 		HashMap<String, Integer> LHashMap = new HashMap<>();
 		
 		//Building hashmaps from files in provided paths.
-		FileVisitor<Path> fileprocessor = new ProcessFile(DRHashMap, totalWordCounts, 0);
+		FileVisitor<Path> fileprocessor = new WordCounts(DRHashMap, totalWordCounts, 0);
 		Files.walkFileTree(Paths.get(paths[0]), fileprocessor);
-		fileprocessor = new ProcessFile(DTHashMap, totalWordCounts, 1);
+		fileprocessor = new WordCounts(DTHashMap, totalWordCounts, 1);
 		Files.walkFileTree(Paths.get(paths[1]), fileprocessor);
-		fileprocessor = new ProcessFile(LHashMap, totalWordCounts, 2);
+		fileprocessor = new WordCounts(LHashMap, totalWordCounts, 2);
 		Files.walkFileTree(Paths.get(paths[2]), fileprocessor);
 		
 		/* Build sorted array listed sorted by value then key from
@@ -68,6 +71,65 @@ public class Naive_Bayes {
 		Collections.sort(DTSortedEntrys, new MapComparator());
 		List<Map.Entry<String, Integer>> LSortedEntrys = new ArrayList<>(LHashMap.entrySet());
 		Collections.sort(LSortedEntrys, new MapComparator());
+		ListIterator<Map.Entry<String, Integer>> iter1 = DRSortedEntrys.listIterator();
+		ListIterator<Map.Entry<String, Integer>> iter2 = DTSortedEntrys.listIterator();
+		ListIterator<Map.Entry<String, Integer>> iter3 = LSortedEntrys.listIterator();
+		
+		List<String> features = new ArrayList<>();
+		
+		//create list of features
+		for(int i = 0; i < 20; i++){
+			Map.Entry iter1ent = iter1.next();
+			Map.Entry iter2ent = iter2.next();
+			Map.Entry iter3ent = iter3.next();
+			if (!features.contains(iter1ent.getKey().toString())) {
+				features.add(iter1ent.getKey().toString());
+			}
+			if (!features.contains(iter2ent.getKey().toString())) {
+				features.add(iter2ent.getKey().toString());
+			}
+			if (!features.contains(iter3ent.getKey().toString())) {
+				features.add(iter3ent.getKey().toString());
+			}
+		}
+		
+		//Arrays of feature vectors
+		Byte DRTrainedFeatures[][] = new Byte[new File(paths[0]).list().length][features.size()];
+		Byte DTTrainedFeatures[][] = new Byte[new File(paths[1]).list().length][features.size()];
+		Byte LTrainedFeatures[][] = new Byte[new File(paths[2]).list().length][features.size()];
+		
+		//building feature vectors by running through files again
+		FileVisitor<Path> vectorProcessor = new BuildFeatureVectors(DRTrainedFeatures, features);
+		Files.walkFileTree(Paths.get(paths[0]), vectorProcessor);
+		vectorProcessor = new BuildFeatureVectors(DTTrainedFeatures, features);
+		Files.walkFileTree(Paths.get(paths[0]), vectorProcessor);
+		vectorProcessor = new BuildFeatureVectors(LTrainedFeatures, features);
+		Files.walkFileTree(Paths.get(paths[0]), vectorProcessor);
+		
+		Float DRProbabilityVector[] = new Float[features.size()];
+		Float DTProbabilityVector[] = new Float[features.size()];
+		Float LProbabilityVector[] = new Float[features.size()];
+		
+		for (int i = 0; i < DRTrainedFeatures[0].length; i++) {
+			int sum = 0;
+			for (int j = 0; j < DRTrainedFeatures.length; j++) {
+				if (DRTrainedFeatures[j][i] > 0) {
+					sum++;
+				}
+			}
+			DRProbabilityVector[i] = (float) sum/DRTrainedFeatures.length;
+		}
+		
+		for (int i = 0; i < DRTrainedFeatures[0].length; i++) {
+			System.out.println(DRProbabilityVector[i]);
+		}
+		
+//		for (int i = 0; i < DRTrainedFeatures.length; i++) {
+//			for (int j = 0; j < features.size(); j++) {
+//				System.out.print(DRTrainedFeatures[i][j]);
+//			}
+//			System.out.println();
+//		}
 	}
 	
 	private static class MapComparator implements Comparator<Map.Entry<String, Integer>>{
@@ -102,12 +164,44 @@ public class Naive_Bayes {
 		return returnIndex;
 	}
 	
-	private static class ProcessFile extends SimpleFileVisitor<Path>{
+	private static class BuildFeatureVectors extends SimpleFileVisitor<Path>{
+		Byte[][] Vector;
+		List<String> featureList;
+		int vectorFileIndex = 0;
+		int vectorFeatureIndex = 0;
+		
+		public BuildFeatureVectors(Byte[][] Vector, List<String> featureList){
+			this.Vector = Vector;
+			this.featureList = featureList;
+		}
+		
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+			Scanner thescanner = new Scanner(new File(file.toString())).useDelimiter("\\Z");
+			String fileText = thescanner.next();
+			fileText = fileText.replaceAll("[^a-zA-Z]", " ").toLowerCase().trim();
+			fileText = fileText.replaceAll("\n", " ");
+			fileText = fileText.replaceAll(" +", " ");
+			for (int i = 0; i < featureList.size(); i++) {
+				Pattern p = Pattern.compile("\\b"+featureList.get(i)+"\\b");
+				Matcher m = p.matcher(fileText);
+				if (m.find()) {
+					Vector[vectorFileIndex][i] = 1;
+				}else{
+					Vector[vectorFileIndex][i] = 0;
+				}
+			}
+			vectorFileIndex++;
+			return FileVisitResult.CONTINUE;
+		}
+	}
+	
+	private static class WordCounts extends SimpleFileVisitor<Path>{
 		HashMap<String, Integer> themap;
 		int totalWordCounts[];
 		int index;
 		
-		public ProcessFile(HashMap themap, int totalWordCounts[], int index) {
+		public WordCounts(HashMap themap, int totalWordCounts[], int index) {
 			this.themap = themap;
 			this.totalWordCounts = totalWordCounts;
 			this.index = index;
