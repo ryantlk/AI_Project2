@@ -28,5 +28,9 @@ public class AI_Project {
 //		Naive_Bayes bayesTest = new Naive_Bayes(args[0], args[1], args[2], args[3]);
 //		bayesTest.train();
 //		bayesTest.Test();
+		
+		Naive_Bayes_Improved bayesImpTest = new Naive_Bayes_Improved(args[0], args[1], args[2], args[3]);
+		bayesImpTest.train();
+		bayesImpTest.Test();
 	}
 }
