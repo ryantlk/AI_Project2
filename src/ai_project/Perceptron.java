@@ -124,7 +124,7 @@ public class Perceptron {
 		}
 		
 		public boolean vote(wordRecord [] wordList){
-			int sum=0;
+			double sum=0;
 			for(int i=0;i<wordList.length;i++){
 				sum+=weights[i]*wordList[i].countP;
 			}

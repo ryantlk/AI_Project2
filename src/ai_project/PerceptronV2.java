@@ -26,10 +26,10 @@ public class PerceptronV2 {
 				"than","then","now","look","only","come","its","over","think",
 				"also","back","after","use","two","how","our","work","first",
 				"well","way","even","new","want","because","any","these","give"
-				,"day","most","us"};//,"oregon","washington","said","under","hereby","person","shall",
-				//"such","may","are","number","date",",above","county","state","law","due",
-				//"division","department","tax","above","named","amount","following","was","social"};
-				//,"office","health","section","name","clerk","description","box","national","lance","benton"
+				,"day","most","us","oregon","washington","said","under","hereby","person","shall",
+				"such","may","are","number","date",",above","county","state","law","due"};
+				//,"division","department","tax","above","named","amount","following","was","social"};
+				//,"office","health","section","name","clerk","description","box","national","lance","benton"};
 				//,"legal","xxx","inc","public","before","taxpayer","page","known","pay","company","personally"
 				//,"official","present","acknowledged","described","assessment","corporation","wessell"};
 		
@@ -101,14 +101,14 @@ public class PerceptronV2 {
 								if(w1.countP<w2.countP)return 1; else if(w1.countP>w2.countP) return -1;
 								else return w1.word.compareTo(w2.word);};});
 			//grab to 20 words, or as many as we can
-			int wordC=0;
+			int wordC=1;
 			List<String> stringList=new ArrayList<String>();
 			for(wordRecord f:pp){
 				stringList.add(f.word);
 			}
-			//for(String f:CommonStrings){
-				//stringList.remove(f);
-			//}
+			for(String f:CommonStrings){
+				stringList.remove(f);
+			}
 			List <String> toremove=new ArrayList<String>();
 			for(String f:stringList){
 				if(f.length()<3){
@@ -119,12 +119,21 @@ public class PerceptronV2 {
 				stringList.remove(f);
 			}
 			bagOfWords2=new ArrayList<wordRecord>();
-			//bagOfWords2.add(new wordRecord("lien"));
-			//bagOfWords2.add(new wordRecord("trust"));
-			//bagOfWords2.add(new wordRecord("reconveyance"));
-			//stringList.remove("lien");
-			//stringList.remove("trust");
-			//stringList.remove("reconveyance");
+			if(classification.equalsIgnoreCase("Dt")){
+				bagOfWords2.add(new wordRecord("trust"));
+				stringList.remove("trust");
+			}
+			else if(classification.equalsIgnoreCase("Dr")){
+				bagOfWords2.add(new wordRecord("reconveyance"));
+				stringList.remove("reconveyance");
+			}
+			else{
+				bagOfWords2.add(new wordRecord("lien"));
+				stringList.remove("lien");
+			}
+			
+			
+			
 			for(String f:stringList){
 				bagOfWords2.add(new wordRecord(f));
 				wordC++;

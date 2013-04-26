@@ -9,67 +9,43 @@ import java.util.*;
 
 public class PercepV2 {
 	
-	public PercepV2(String learning,String testDir) {
+	public PercepV2(String d1,String d2, String d3,String testDir) {
 		List<String> Dr=new ArrayList<String>();
 		List<String> Dt=new ArrayList<String>();
 		List<String> L=new ArrayList<String>();
 		List<String>bagOfWords=new ArrayList<String>();
-		java.io.File h=new java.io.File(learning+"/DR");
+		String [] alldir=new String[3];
+		alldir[0]=d1;
+		alldir[1]=d2;
+		alldir[2]=d3;
 		wordRecord [] b;
-		String [] fileS=h.list();
-		for(String f:fileS){
-			h=new java.io.File(learning+"/DR/"+f);
-			try {
-				FileInputStream d=new FileInputStream(h);
-				byte [] ss;
-				ss=new byte[(int)h.length()];
+		for(int i=0;i<3;i++){
+			java.io.File h=new java.io.File(alldir[i]);
+			String [] fileS=h.list();
+			for(String f:fileS){
+				java.io.File hh=new java.io.File(alldir[i]+"/"+f);
 				try {
-					d.read(ss);
-					String st=new String(ss);
-					Dr.add(st);
-					d.close();
-				} catch (IOException e) {
+					FileInputStream d=new FileInputStream(hh);
+					byte [] ss;
+					ss=new byte[(int)h.length()];
+					try {
+						d.read(ss);
+						String st=new String(ss);
+						if(h.getName().equalsIgnoreCase("dr")){
+							Dr.add(st);
+						}
+						else if(h.getName().equalsIgnoreCase("dt")){
+							Dt.add(st);
+						}
+						else{
+							L.add(st);
+						}
+						d.close();
+					} catch (IOException e) {
+					}
+					
+				} catch (FileNotFoundException e) {
 				}
-				
-			} catch (FileNotFoundException e) {
-			}
-		}
-		h=new java.io.File(learning+"/DT");
-		fileS=h.list();
-		for(String f:fileS){
-			h=new java.io.File(learning+"/DT/"+f);
-			try {
-				FileInputStream d=new FileInputStream(h);
-				byte [] ss;
-				ss=new byte[(int)h.length()];
-				try {
-					d.read(ss);
-					String st=new String(ss);
-					Dt.add(st);
-					d.close();
-				} catch (IOException e) {
-				}
-				
-			} catch (FileNotFoundException e) {
-			}
-		}
-		h=new java.io.File(learning+"/L");
-		fileS=h.list();
-		for(String f:fileS){
-			h=new java.io.File(learning+"/L/"+f);
-			try {
-				FileInputStream d=new FileInputStream(h);
-				byte [] ss;
-				ss=new byte[(int)h.length()];
-				try {
-					d.read(ss);
-					String st=new String(ss);
-					L.add(st);
-					d.close();
-				} catch (IOException e) {
-				}
-				
-			} catch (FileNotFoundException e) {
 			}
 		}
 		List<PerceptronV2> myPerceptrons=new ArrayList<PerceptronV2>();
@@ -215,84 +191,84 @@ public class PercepV2 {
 					boolean dtV=myPerceptrons.get(1).vote(b);
 					boolean lV=myPerceptrons.get(2).vote(b);
 					if(drV&&!dtV&&!lV){
-						p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"dr");
+						p1.println("Percptronv2,"+theFiles.get(fileN)+","+"dr");
 					}
 					else if(!drV&&dtV&&!lV){
-						p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"dt");
+						p1.println("Percptronv2,"+theFiles.get(fileN)+","+"dt");
 					}
 					else if(!drV&&!dtV&&lV){
-						p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"l");
+						p1.println("Percptronv2,"+theFiles.get(fileN)+","+"l");
 					}
 					else{
 						int ranChoice=(int)(Math.random()*3.0);
 						if(ranChoice==1){
 							if(drV){
-								p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"dr");
+								p1.println("Percptronv2,"+theFiles.get(fileN)+","+"dr");
 							}
 							else{
 								ranChoice=(int)(Math.random()*2);
 								if(ranChoice==1){
 									if(dtV){
-										p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"dt");
+										p1.println("Percptronv2,"+theFiles.get(fileN)+","+"dt");
 									}
 									else{
-										p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"l");
+										p1.println("Percptronv2,"+theFiles.get(fileN)+","+"l");
 									}
 								}
 								else{
 									if(lV){
-										p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"l");
+										p1.println("Percptronv2,"+theFiles.get(fileN)+","+"l");
 									}
 									else{
-										p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"dt");
+										p1.println("Percptronv2,"+theFiles.get(fileN)+","+"dt");
 									}
 								}
 							}
 						}
 						else if(ranChoice==2){
 							if(dtV){
-								p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"dt");
+								p1.println("Percptronv2,"+theFiles.get(fileN)+","+"dt");
 							}
 							else{
 								ranChoice=(int)(Math.random()*2);
 								if(ranChoice==1){
 									if(drV){
-										p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"dr");
+										p1.println("Percptronv2,"+theFiles.get(fileN)+","+"dr");
 									}
 									else{
-										p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"l");
+										p1.println("Percptronv2,"+theFiles.get(fileN)+","+"l");
 									}
 								}
 								else{
 									if(lV){
-										p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"l");
+										p1.println("Percptronv2,"+theFiles.get(fileN)+","+"l");
 									}
 									else{
-										p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"dr");
+										p1.println("Percptronv2,"+theFiles.get(fileN)+","+"dr");
 									}
 								}
 							}
 						}
 						else{
 							if(lV){
-								p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"l");
+								p1.println("Percptronv2,"+theFiles.get(fileN)+","+"l");
 							}
 							else{
 								ranChoice=(int)(Math.random()*2);
 								if(ranChoice==1){
 									if(dtV){
-										p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"dt");
+										p1.println("Percptronv2,"+theFiles.get(fileN)+","+"dt");
 									}
 									else{
-										p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"dr");
+										p1.println("Percptronv2,"+theFiles.get(fileN)+","+"dr");
 									}
 								}
 								else{
 									if(drV){
-										p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"dr");
+										p1.println("Percptronv2,"+theFiles.get(fileN)+","+"dr");
 									}
 									else{
-										p1.println("Percptron v2 "+theFiles.get(fileN)+" "+"dt");
+										p1.println("Percptronv2,"+theFiles.get(fileN)+","+"dt");
 									}
 								}
 							}
