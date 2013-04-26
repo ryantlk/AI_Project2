@@ -32,6 +32,12 @@ import java.util.regex.Pattern;
 public class Naive_Bayes {
 	//paths index 0 = DR, 1 = DT, 2 = L, 3 = TEST
 	String paths[];
+	int DRFileCount, DTFileCount, LFileCount;
+	float ProbabilityOfDR, ProbabilityOfDT, ProbabilityOfL;
+	Float DRProbabilityVector[];
+	Float DTProbabilityVector[];
+	Float LProbabilityVector[];
+	List<String> features;
 
 	public Naive_Bayes(String path1, String path2, String path3, String path4) {
 		paths = new String[4];
@@ -39,6 +45,12 @@ public class Naive_Bayes {
 		this.paths[pathIndex(path2)] = path2;
 		this.paths[pathIndex(path3)] = path3;
 		this.paths[pathIndex(path4)] = path4;
+		DRFileCount = new File(path1).list().length;
+		DTFileCount = new File(path2).list().length;
+		LFileCount = new File(path3).list().length;
+		ProbabilityOfDR = (float) DRFileCount/(DRFileCount + DTFileCount + LFileCount);
+		ProbabilityOfDT = (float) DTFileCount/(DRFileCount + DTFileCount + LFileCount);
+		ProbabilityOfL = (float) LFileCount/(DRFileCount + DTFileCount + LFileCount);
 	}
 	
 	public void train() throws IOException{
@@ -75,7 +87,7 @@ public class Naive_Bayes {
 		ListIterator<Map.Entry<String, Integer>> iter2 = DTSortedEntrys.listIterator();
 		ListIterator<Map.Entry<String, Integer>> iter3 = LSortedEntrys.listIterator();
 		
-		List<String> features = new ArrayList<>();
+		features = new ArrayList<>();
 		
 		//create list of features
 		for(int i = 0; i < 20; i++){
@@ -93,10 +105,12 @@ public class Naive_Bayes {
 			}
 		}
 		
+		int featureCount = features.size();
+		
 		//Arrays of feature vectors
-		Byte DRTrainedFeatures[][] = new Byte[new File(paths[0]).list().length][features.size()];
-		Byte DTTrainedFeatures[][] = new Byte[new File(paths[1]).list().length][features.size()];
-		Byte LTrainedFeatures[][] = new Byte[new File(paths[2]).list().length][features.size()];
+		Byte DRTrainedFeatures[][] = new Byte[DRFileCount][featureCount];
+		Byte DTTrainedFeatures[][] = new Byte[DTFileCount][featureCount];
+		Byte LTrainedFeatures[][] = new Byte[LFileCount][featureCount];
 		
 		//building feature vectors by running through files again
 		FileVisitor<Path> vectorProcessor = new BuildFeatureVectors(DRTrainedFeatures, features);
@@ -106,30 +120,35 @@ public class Naive_Bayes {
 		vectorProcessor = new BuildFeatureVectors(LTrainedFeatures, features);
 		Files.walkFileTree(Paths.get(paths[0]), vectorProcessor);
 		
-		Float DRProbabilityVector[] = new Float[features.size()];
-		Float DTProbabilityVector[] = new Float[features.size()];
-		Float LProbabilityVector[] = new Float[features.size()];
+		DRProbabilityVector = new Float[featureCount];
+		DTProbabilityVector = new Float[featureCount];
+		LProbabilityVector = new Float[featureCount];
 		
-		for (int i = 0; i < DRTrainedFeatures[0].length; i++) {
+		ComputeProbabilities(DRTrainedFeatures, DRProbabilityVector, featureCount, DRFileCount);
+		ComputeProbabilities(DTTrainedFeatures, DTProbabilityVector, featureCount, DTFileCount);
+		ComputeProbabilities(LTrainedFeatures, LProbabilityVector, featureCount, LFileCount);
+	}
+	
+	private void printtest(Float[] test, int featureCount){
+		for (int i = 0; i < featureCount; i++) {
+			System.out.println(test[i]);
+		}
+	}
+	
+	private void ComputeProbabilities(Byte[][] TrainedFeatures, Float[] Probabilities, int featureCount, int classFileCount){
+		for (int i = 0; i < featureCount; i++) {
 			int sum = 0;
-			for (int j = 0; j < DRTrainedFeatures.length; j++) {
-				if (DRTrainedFeatures[j][i] > 0) {
+			for (int j = 0; j < classFileCount; j++) {
+				if (TrainedFeatures[j][i] > 0) {
 					sum++;
 				}
 			}
-			DRProbabilityVector[i] = (float) sum/DRTrainedFeatures.length;
+			if (sum == 0) {
+				Probabilities[i] = (float) 1/classFileCount;
+			}else{
+				Probabilities[i] = (float) sum/classFileCount;
+			}
 		}
-		
-		for (int i = 0; i < DRTrainedFeatures[0].length; i++) {
-			System.out.println(DRProbabilityVector[i]);
-		}
-		
-//		for (int i = 0; i < DRTrainedFeatures.length; i++) {
-//			for (int j = 0; j < features.size(); j++) {
-//				System.out.print(DRTrainedFeatures[i][j]);
-//			}
-//			System.out.println();
-//		}
 	}
 	
 	private static class MapComparator implements Comparator<Map.Entry<String, Integer>>{
