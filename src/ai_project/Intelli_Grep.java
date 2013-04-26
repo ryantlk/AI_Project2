@@ -66,7 +66,7 @@ public class Intelli_Grep {
 			if(L > DT && L > DR){
 				classification = "L";
 			}
-			System.out.println("Intelli-Grep Baseline, " + file.getFileName().toString() + ", " + classification);
+			System.out.println("Intelli-Grep Baseline," + file.getFileName().toString() + "," + classification);
 			return FileVisitResult.CONTINUE;
 		}
 	}
