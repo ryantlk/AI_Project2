@@ -33,10 +33,10 @@ public class Naive_Bayes {
 	//paths index 0 = DR, 1 = DT, 2 = L, 3 = TEST
 	String paths[];
 	int DRFileCount, DTFileCount, LFileCount;
-	float ProbabilityOfDR, ProbabilityOfDT, ProbabilityOfL;
-	Float DRProbabilityVector[];
-	Float DTProbabilityVector[];
-	Float LProbabilityVector[];
+	Double ProbabilityOfDR, ProbabilityOfDT, ProbabilityOfL;
+	Double DRProbabilityVector[];
+	Double DTProbabilityVector[];
+	Double LProbabilityVector[];
 	List<String> features;
 
 	public Naive_Bayes(String path1, String path2, String path3, String path4) {
@@ -48,9 +48,9 @@ public class Naive_Bayes {
 		DRFileCount = new File(path1).list().length;
 		DTFileCount = new File(path2).list().length;
 		LFileCount = new File(path3).list().length;
-		ProbabilityOfDR = (float) DRFileCount/(DRFileCount + DTFileCount + LFileCount);
-		ProbabilityOfDT = (float) DTFileCount/(DRFileCount + DTFileCount + LFileCount);
-		ProbabilityOfL = (float) LFileCount/(DRFileCount + DTFileCount + LFileCount);
+		ProbabilityOfDR = (double) DRFileCount/(DRFileCount + DTFileCount + LFileCount);
+		ProbabilityOfDT = (double) DTFileCount/(DRFileCount + DTFileCount + LFileCount);
+		ProbabilityOfL = (double) LFileCount/(DRFileCount + DTFileCount + LFileCount);
 	}
 	
 	public void train() throws IOException{
@@ -116,26 +116,81 @@ public class Naive_Bayes {
 		FileVisitor<Path> vectorProcessor = new BuildFeatureVectors(DRTrainedFeatures, features);
 		Files.walkFileTree(Paths.get(paths[0]), vectorProcessor);
 		vectorProcessor = new BuildFeatureVectors(DTTrainedFeatures, features);
-		Files.walkFileTree(Paths.get(paths[0]), vectorProcessor);
+		Files.walkFileTree(Paths.get(paths[1]), vectorProcessor);
 		vectorProcessor = new BuildFeatureVectors(LTrainedFeatures, features);
-		Files.walkFileTree(Paths.get(paths[0]), vectorProcessor);
+		Files.walkFileTree(Paths.get(paths[2]), vectorProcessor);
 		
-		DRProbabilityVector = new Float[featureCount];
-		DTProbabilityVector = new Float[featureCount];
-		LProbabilityVector = new Float[featureCount];
+		DRProbabilityVector = new Double[featureCount];
+		DTProbabilityVector = new Double[featureCount];
+		LProbabilityVector = new Double[featureCount];
 		
 		ComputeProbabilities(DRTrainedFeatures, DRProbabilityVector, featureCount, DRFileCount);
 		ComputeProbabilities(DTTrainedFeatures, DTProbabilityVector, featureCount, DTFileCount);
 		ComputeProbabilities(LTrainedFeatures, LProbabilityVector, featureCount, LFileCount);
 	}
 	
-	private void printtest(Float[] test, int featureCount){
-		for (int i = 0; i < featureCount; i++) {
-			System.out.println(test[i]);
+	public void Test() throws IOException{
+		FileVisitor<Path> classifyProcessor = new ClassifyDocuments(DRProbabilityVector, DTProbabilityVector, LProbabilityVector, features,
+																	ProbabilityOfDR, ProbabilityOfDT, ProbabilityOfL);
+		Files.walkFileTree(Paths.get(paths[3]), classifyProcessor);
+	}
+	
+	private static class ClassifyDocuments extends SimpleFileVisitor<Path>{
+		Double DRProbabilities[], DTProbabilities[], LProbabilities[];
+		Double ProbabilityOfDR, ProbabilityOfDT, ProbabilityOfL;
+		List<String> featureList;
+		
+		public ClassifyDocuments(Double DRProbabilities[], Double DTProbabilities[], Double LProbabilities[], List<String> featureList,
+								 Double ProbabilityOfDR, Double ProbabilityOfDT, Double ProbabilityOfL){
+			this.featureList = featureList;
+			this.DRProbabilities = DRProbabilities;
+			this.DTProbabilities = DTProbabilities;
+			this.LProbabilities = LProbabilities;
+			this.ProbabilityOfDR = ProbabilityOfDR;
+			this.ProbabilityOfDT = ProbabilityOfDT;
+			this.ProbabilityOfL = ProbabilityOfL;
+		}
+		
+		@Override
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+			Scanner thescanner = new Scanner(new File(file.toString())).useDelimiter("\\Z");
+			String fileText = thescanner.next();
+			fileText = fileText.replaceAll("[^a-zA-Z]", " ").toLowerCase().trim();
+			fileText = fileText.replaceAll("\n", " ");
+			fileText = fileText.replaceAll(" +", " ");
+			Double DRProbability, DTProbability, LProbability;
+			DRProbability = DTProbability = LProbability = 1.0;
+			for (int i = 0; i < featureList.size(); i++) {
+				Pattern p = Pattern.compile("\\b"+featureList.get(i)+"\\b");
+				Matcher m = p.matcher(fileText);
+				if (m.find()) {
+					DRProbability = DRProbability * DRProbabilities[i];
+					DTProbability = DTProbability * DTProbabilities[i];
+					LProbability = LProbability * LProbabilities[i];
+				}else{
+					DRProbability = DRProbability * (1 - DRProbabilities[i]);
+					DTProbability = DTProbability * (1 - DTProbabilities[i]);
+					LProbability = LProbability * (1 - LProbabilities[i]);
+				}
+			}
+			DRProbability = DRProbability * ProbabilityOfDR;
+			DTProbability = DTProbability * ProbabilityOfDT;
+			LProbability = LProbability * ProbabilityOfL;
+			Double maxProbability = Math.max(DRProbability, Math.max(DTProbability, LProbability));
+			String classification;
+			if (DRProbability.equals(maxProbability)) {
+				classification = "DR";
+			}else if (DTProbability.equals(maxProbability)){
+				classification = "DT";
+			}else{
+				classification = "L";
+			}
+			System.out.println("Naive Bayes Baseline," + file.getFileName().toString() + "," + classification);
+			return FileVisitResult.CONTINUE;
 		}
 	}
 	
-	private void ComputeProbabilities(Byte[][] TrainedFeatures, Float[] Probabilities, int featureCount, int classFileCount){
+	private void ComputeProbabilities(Byte[][] TrainedFeatures, Double[] Probabilities, int featureCount, int classFileCount){
 		for (int i = 0; i < featureCount; i++) {
 			int sum = 0;
 			for (int j = 0; j < classFileCount; j++) {
@@ -144,9 +199,9 @@ public class Naive_Bayes {
 				}
 			}
 			if (sum == 0) {
-				Probabilities[i] = (float) 1/classFileCount;
+				Probabilities[i] = (double) 1/classFileCount;
 			}else{
-				Probabilities[i] = (float) sum/classFileCount;
+				Probabilities[i] = (double) sum/classFileCount;
 			}
 		}
 	}
