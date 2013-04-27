@@ -389,18 +389,18 @@ public class MVNBV2 {
 
 			if (nbProb[0] > nbProb[1]) {
 				if (nbProb[0] > nbProb[2]) {
-					System.out.println(file.getFileName().toString() + "," + "DR");
+//					System.out.println(file.getFileName().toString() + "," + "DR");
 					testResults.put(file.getFileName().toString(), "DR");
 				} else {
-					System.out.println(file.getFileName().toString() + "," + "L");
+//					System.out.println(file.getFileName().toString() + "," + "L");
 					testResults.put(file.getFileName().toString(), "L");
 				}
 			} else {
 				if (nbProb[1] > nbProb[2]) {
-					System.out.println(file.getFileName().toString() + "," + "DT");
+//					System.out.println(file.getFileName().toString() + "," + "DT");
 					testResults.put(file.getFileName().toString(), "DT");
 				} else {
-					System.out.println(file.getFileName().toString() + "," + "L");
+//					System.out.println(file.getFileName().toString() + "," + "L");
 					testResults.put(file.getFileName().toString(), "L");
 				}
 			}
