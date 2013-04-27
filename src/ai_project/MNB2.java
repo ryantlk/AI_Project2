@@ -130,6 +130,7 @@ public class MNB2 {
 		
 		public void test() throws IOException{
 			this.train();
+			PrintWriter pw = new PrintWriter(new FileOutputStream("MNB2Output.txt"));
             int DT_ = 0;
             int DR_ = 0;
             int L_ = 0;
@@ -202,7 +203,7 @@ public class MNB2 {
                 	result = ",L";
                 	L_++;
                 }
-                System.out.println("Improved Multinomial Naive Bayes," + files[i].getName() + result);
+                pw.println("Improved Multinomial Naive Bayes," + files[i].getName() + result);
             }
 		}
 
