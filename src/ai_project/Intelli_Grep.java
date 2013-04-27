@@ -56,6 +56,9 @@ public class Intelli_Grep {
 		
 		@Override
 		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+			if (file.toString().contains(".DS_Store")) {
+				return FileVisitResult.CONTINUE;
+			}
 			Scanner thescanner = new Scanner(new File(file.toString())).useDelimiter("\\Z");
 			String fileText = thescanner.next();
 			int DT, DR, L;

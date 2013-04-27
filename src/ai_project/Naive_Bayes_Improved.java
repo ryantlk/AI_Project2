@@ -211,6 +211,9 @@ public class Naive_Bayes_Improved {
 		
 		@Override
 		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+			if (file.toString().contains(".DS_Store")) {
+				return FileVisitResult.CONTINUE;
+			}
 			Scanner thescanner = new Scanner(new File(file.toString())).useDelimiter("\\Z");
 			String fileText = thescanner.next();
 			fileText = fileText.replaceAll("[^a-zA-Z]", " ").toLowerCase().trim();
@@ -318,6 +321,9 @@ public class Naive_Bayes_Improved {
 		
 		@Override
 		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+			if (file.toString().contains(".DS_Store")) {
+				return FileVisitResult.CONTINUE;
+			}
 			Scanner thescanner = new Scanner(new File(file.toString())).useDelimiter("\\Z");
 			String fileText = thescanner.next();
 			fileText = fileText.replaceAll("[^a-zA-Z]", " ").toLowerCase().trim();
@@ -359,6 +365,9 @@ public class Naive_Bayes_Improved {
 		
 		@Override
 		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+			if (file.toString().contains(".DS_Store")) {
+				return FileVisitResult.CONTINUE;
+			}
 			Scanner thescanner = new Scanner(new File(file.toString())).useDelimiter("\\Z");
 			String fileText = thescanner.next();
 			/* Replace all non alphabetic characters and newlines with spaces.
