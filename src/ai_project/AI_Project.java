@@ -38,6 +38,12 @@ public class AI_Project {
 		//results outputed to file resultsV2.txt in current directory
 		PercepV2 testPercep2=new PercepV2(args[0],args[1],args[2],args[3]);
 		
+		MNB mnbTest = new MNB(args[0],args[1],args[2],args[3]);
+		mnbTest.test();
+		
+		MNB2 mnb2Test = new MNB2(args[0],args[1],args[2],args[3]);
+		mnb2Test.test();
+		
 		MVNB m = new MVNB(args[0], args[1], args[2], args[3]);
 		m.train();
 		m.test();
