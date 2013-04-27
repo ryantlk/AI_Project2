@@ -6,6 +6,7 @@ package ai_project;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -39,6 +40,7 @@ public class Naive_Bayes_Improved {
 	Double DTProbabilityVector[];
 	Double LProbabilityVector[];
 	List<String> features;
+	List<String> thelist;
 
 	public Naive_Bayes_Improved(String path1, String path2, String path3, String path4) {
 		paths = new String[4];
@@ -46,6 +48,7 @@ public class Naive_Bayes_Improved {
 		this.paths[pathIndex(path2)] = path2;
 		this.paths[pathIndex(path3)] = path3;
 		this.paths[pathIndex(path4)] = path4;
+		this.thelist = new ArrayList<>();
 		DRFileCount = new File(path1).list().length;
 		DTFileCount = new File(path2).list().length;
 		LFileCount = new File(path3).list().length;
@@ -177,18 +180,27 @@ public class Naive_Bayes_Improved {
 	
 	public void Test() throws IOException{
 		FileVisitor<Path> classifyProcessor = new ClassifyDocuments(DRProbabilityVector, DTProbabilityVector, LProbabilityVector, features,
-																	ProbabilityOfDR, ProbabilityOfDT, ProbabilityOfL);
+																	ProbabilityOfDR, ProbabilityOfDT, ProbabilityOfL, thelist);
 		Files.walkFileTree(Paths.get(paths[3]), classifyProcessor);
+		File file = new File("./NB_Improved.txt");
+		file.createNewFile();
+		PrintWriter pw = new PrintWriter(file);
+		for (String string : thelist) {
+			pw.println(string);
+		}
+		pw.close();
 	}
 	
 	private static class ClassifyDocuments extends SimpleFileVisitor<Path>{
 		Double DRProbabilities[], DTProbabilities[], LProbabilities[];
 		Double ProbabilityOfDR, ProbabilityOfDT, ProbabilityOfL;
 		List<String> featureList;
+		List<String> thelist;
 		
 		public ClassifyDocuments(Double DRProbabilities[], Double DTProbabilities[], Double LProbabilities[], List<String> featureList,
-								 Double ProbabilityOfDR, Double ProbabilityOfDT, Double ProbabilityOfL){
+								 Double ProbabilityOfDR, Double ProbabilityOfDT, Double ProbabilityOfL, List<String> thelist){
 			this.featureList = featureList;
+			this.thelist = thelist;
 			this.DRProbabilities = DRProbabilities;
 			this.DTProbabilities = DTProbabilities;
 			this.LProbabilities = LProbabilities;
@@ -240,7 +252,8 @@ public class Naive_Bayes_Improved {
 			}else{
 				classification = "L";
 			}
-			System.out.println("Naive Bayes Improved," + file.getFileName().toString() + "," + classification);
+			thelist.add("Naive Bayes Improved," + file.getFileName().toString() + "," + classification);
+//			System.out.println("Naive Bayes Improved," + file.getFileName().toString() + "," + classification);
 			return FileVisitResult.CONTINUE;
 		}
 	}

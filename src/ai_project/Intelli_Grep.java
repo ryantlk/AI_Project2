@@ -6,6 +6,7 @@ package ai_project;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -13,6 +14,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,17 +28,32 @@ import java.util.regex.Pattern;
 public class Intelli_Grep {
 	
 	String testPath;
+	List<String> thelist;
 
 	public Intelli_Grep(String testPath) {
 		this.testPath = testPath;
+		this.thelist = new ArrayList<>();
 	}
 	
 	public void classify() throws IOException{
-		FileVisitor<Path> fileprocessor = new ProcessFile();
+		FileVisitor<Path> fileprocessor = new ProcessFile(thelist);
 		Files.walkFileTree(Paths.get(testPath), fileprocessor);
+		File file = new File("./Intelli_Grep_Results.txt");
+		file.createNewFile();
+		PrintWriter pw = new PrintWriter(file);
+		for (String string : thelist) {
+			pw.println(string);
+		}
+		pw.close();
 	}
 	
 	private static final class ProcessFile extends SimpleFileVisitor<Path>{
+		List<String> thelist;
+		
+		public ProcessFile(List<String> thelist){
+			this.thelist = thelist;
+		}
+		
 		@Override
 		public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 			Scanner thescanner = new Scanner(new File(file.toString())).useDelimiter("\\Z");
@@ -55,18 +74,30 @@ public class Intelli_Grep {
 			while(m.find()){
 				DR++;
 			}
-			if(DR > DT){
-				classification = "DR";
-			}
 			p = Pattern.compile("\\blien\\b");
 			m = p.matcher(fileText);
 			while(m.find()){
 				L++;
 			}
-			if(L > DT && L > DR){
-				classification = "L";
+			int max = Math.max(DR, Math.max(DT, L));
+			List<String> maxStrings = new ArrayList<>();
+			if (DR == max) {
+				maxStrings.add("DR");
 			}
-			System.out.println("Intelli-Grep Baseline," + file.getFileName().toString() + "," + classification);
+			if (DT == max) {
+				maxStrings.add("DT");
+			}
+			if (L == max) {
+				maxStrings.add("L");
+			}
+			if (maxStrings.size() > 1) {
+				Random generator = new Random();
+				classification = maxStrings.get(generator.nextInt(maxStrings.size()));
+			}else{
+				classification = maxStrings.get(0);
+			}
+			thelist.add("Intelli-Grep,"+file.getFileName().toString()+","+classification);
+//			System.out.println(file.getFileName().toString() + "," + classification);
 			return FileVisitResult.CONTINUE;
 		}
 	}
