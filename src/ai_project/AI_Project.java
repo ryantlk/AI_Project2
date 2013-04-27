@@ -32,5 +32,10 @@ public class AI_Project {
 		Naive_Bayes_Improved bayesImpTest = new Naive_Bayes_Improved(args[0], args[1], args[2], args[3]);
 		bayesImpTest.train();
 		bayesImpTest.Test();
+		
+		//results outputed to file results.txt in current directory
+		Percp testPercep=new Percp(args[0],args[1],args[2],args[3]);
+		//results outputed to file resultsV2.txt in current directory
+		PercepV2 testPercep2=new PercepV2(args[0],args[1],args[2],args[3]);
 	}
 }
