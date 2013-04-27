@@ -21,7 +21,7 @@ public class AI_Project {
 					+ " <path1> <path2> <path3> <testpath>");
 			System.exit(1);
 		}
-		
+		 
 		Intelli_Grep grepTest = new Intelli_Grep(args[3]);
 		grepTest.classify();
 		
@@ -37,5 +37,14 @@ public class AI_Project {
 		Percp testPercep=new Percp(args[0],args[1],args[2],args[3]);
 		//results outputed to file resultsV2.txt in current directory
 		PercepV2 testPercep2=new PercepV2(args[0],args[1],args[2],args[3]);
+		
+		MVNB m = new MVNB(args[0], args[1], args[2], args[3]);
+		m.train();
+		m.test();
+
+		MVNBV2 m2 = new MVNBV2(args[0], args[1], args[2], args[3]);
+		m2.setNumEntries(35);
+		m2.train();
+		m2.test();
 	}
 }

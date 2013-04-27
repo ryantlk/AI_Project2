@@ -7,6 +7,7 @@
 package ai_project;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
@@ -78,9 +79,9 @@ public class MVNB {
 			probFV3.put(entry.getKey(), (double) (entry.getValue() + 1.0) / (numFile3[0] + 2.0));
 		}
 
-		System.out.println("FV1 size = " + probFV1.size());
-		System.out.println("FV2 size = " + probFV2.size());
-		System.out.println("FV3 size = " + probFV3.size());
+//		System.out.println("FV1 size = " + probFV1.size());
+//		System.out.println("FV2 size = " + probFV2.size());
+//		System.out.println("FV3 size = " + probFV3.size());
 	}
 
 	public void test() throws IOException {
@@ -88,6 +89,7 @@ public class MVNB {
 		FileVisitor<Path> fileprocessor0 = new TestFiles(probFV1, probFV2, probFV3, testResults2, numFile1, numFile2,
 				numFile3);
 		Files.walkFileTree(Paths.get(testDirPath), fileprocessor0);
+		outputTestResults(testResults2);
 	}
 
 	public void loadTestResults(String strPath) throws IOException {
@@ -121,6 +123,15 @@ public class MVNB {
 		}
 	}
 
+	void outputTestResults(Map<String, String> testResults) throws IOException {
+		java.io.File file = new java.io.File("./MVNB_results.txt");
+		file.createNewFile();
+		PrintWriter pw = new PrintWriter(file);
+		for (Map.Entry<String, String> entry : testResults.entrySet()) {
+			pw.println("MVNB," + entry.getKey() + "," + entry.getValue());
+		}
+		pw.close();
+	}
 	/*
 	 * TrainFiles
 	 */
@@ -265,5 +276,6 @@ public class MVNB {
 
 			return FileVisitResult.CONTINUE;
 		}
+		
 	}
 }
