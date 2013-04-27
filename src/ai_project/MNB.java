@@ -127,6 +127,7 @@ public class MNB {
 		}
 		
 		public void test() throws IOException{
+			PrintWriter pw = new PrintWriter(new FileOutputStream("MNBoutput.txt"));
 			this.train();
             int DT_ = 0;
             int DR_ = 0;
@@ -198,7 +199,8 @@ public class MNB {
                 	result = ",L";
                 	L_++;
                 }
-                System.out.println("Multinomial Naive Bayes," + files[i].getName() + result);
+                
+                pw.println("Multinomial Naive Bayes," + files[i].getName() + result);
             }
 		}
 
