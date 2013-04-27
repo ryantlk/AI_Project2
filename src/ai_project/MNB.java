@@ -198,7 +198,7 @@ public class MNB {
                 	result = ",L";
                 	L_++;
                 }
-                System.out.println("Improved Multinomial Naive Bayes," + files[i].getName() + result);
+                System.out.println("Multinomial Naive Bayes," + files[i].getName() + result);
             }
 		}
 
