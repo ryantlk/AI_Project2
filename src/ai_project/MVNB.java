@@ -66,21 +66,27 @@ public class MVNB {
 		FileVisitor<Path> fileprocessor3 = new TrainFiles(numFile3, boolFV3);
 		Files.walkFileTree(Paths.get(trainDirPath[2]), fileprocessor3);
 
+		// + 1.0 numerator and +2.0 denominator Laplace smoothing and avoiding
+		// log 0;
 		for (Map.Entry<String, Integer> entry : boolFV1.entrySet()) {
-			probFV1.put(entry.getKey(), (double) entry.getValue() / numFile1[0]);
+			probFV1.put(entry.getKey(), (double) (entry.getValue() + 1.0) / (numFile1[0] + 2.0));
 		}
 		for (Map.Entry<String, Integer> entry : boolFV2.entrySet()) {
-			probFV2.put(entry.getKey(), (double) entry.getValue() / numFile2[0]);
+			probFV2.put(entry.getKey(), (double) (entry.getValue() + 1.0) / (numFile2[0] + 2.0));
 		}
 		for (Map.Entry<String, Integer> entry : boolFV3.entrySet()) {
-			probFV3.put(entry.getKey(), (double) entry.getValue() / numFile3[0]);
+			probFV3.put(entry.getKey(), (double) (entry.getValue() + 1.0) / (numFile3[0] + 2.0));
 		}
+
+		System.out.println("FV1 size = " + probFV1.size());
+		System.out.println("FV2 size = " + probFV2.size());
+		System.out.println("FV3 size = " + probFV3.size());
 	}
 
 	public void test() throws IOException {
 		testResults2 = new HashMap<String, String>();
-		FileVisitor<Path> fileprocessor0 = new TestFiles(probFV1, probFV2,
-				probFV3, testResults2);
+		FileVisitor<Path> fileprocessor0 = new TestFiles(probFV1, probFV2, probFV3, testResults2, numFile1, numFile2,
+				numFile3);
 		Files.walkFileTree(Paths.get(testDirPath), fileprocessor0);
 	}
 
@@ -106,8 +112,7 @@ public class MVNB {
 				wrong++;
 			}
 		}
-
-		System.out.println((double)right / (double)(right+wrong));
+		System.out.println((double) right / (double) (right + wrong));
 	}
 
 	void printTestResults(Map<String, String> testResults) {
@@ -131,8 +136,7 @@ public class MVNB {
 		}
 
 		@Override
-		public FileVisitResult visitFile(Path file, BasicFileAttributes attr)
-				throws IOException {
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attr) throws IOException {
 			numFile[0]++;
 			// System.out.println(file.getFileName().toString());
 
@@ -169,21 +173,27 @@ public class MVNB {
 		private Map<String, Double> probFV1;
 		private Map<String, Double> probFV2;
 		private Map<String, Double> probFV3;
+
+		private int[] numFile1;
+		private int[] numFile2;
+		private int[] numFile3;
+
 		private Map<String, String> testResults;
 
-		public TestFiles(Map<String, Double> probFV1,
-				Map<String, Double> probFV2, Map<String, Double> probFV3,
-				Map<String, String> testResults) {
+		public TestFiles(Map<String, Double> probFV1, Map<String, Double> probFV2, Map<String, Double> probFV3,
+				Map<String, String> testResults, int[] numFile1, int[] numFile2, int[] numFile3) {
+
 			this.probFV1 = probFV1;
 			this.probFV2 = probFV2;
 			this.probFV3 = probFV3;
+			this.numFile1 = numFile1;
+			this.numFile2 = numFile2;
+			this.numFile3 = numFile3;
 			this.testResults = testResults;
-
 		}
 
 		@Override
-		public FileVisitResult visitFile(Path file, BasicFileAttributes attr)
-				throws IOException {
+		public FileVisitResult visitFile(Path file, BasicFileAttributes attr) throws IOException {
 			byte[] fileArray;
 			// System.out.println(file.getFileName().toString());
 			fileArray = Files.readAllBytes(file);
@@ -203,79 +213,52 @@ public class MVNB {
 				}
 			}
 			// Even number is inverse probability.
-			double[] nbProb = new double[6];
-			boolean[] nbSet = new boolean[6];
+			double[] nbProb = new double[3];
+			int numFileTotal = numFile1[0] + numFile2[0] + numFile3[0];
+			nbProb[0] = Math.log((double) numFile1[0] / (double) numFileTotal);
+			nbProb[1] = Math.log((double) numFile2[0] / (double) numFileTotal);
+			nbProb[2] = Math.log((double) numFile3[0] / (double) numFileTotal);
 
-			for (String s : inList) {
-				if (probFV1.get(s) != null) {
-					if (nbSet[0]) {
-						nbProb[0] += Math.log(probFV1.get(s));
-					} else {
-						nbProb[0] = Math.log(probFV1.get(s));
-						nbSet[0] = true;
-					}
-					// Inverse probability
-					if (nbSet[1]) {
-						nbProb[1] += Math.log((1.0 - probFV1.get(s)));
-					} else {
-						nbProb[1] = Math.log(1.0 - probFV1.get(s));
-						nbSet[1] = true;
-					}
+			for (Map.Entry<String, Double> entry : probFV1.entrySet()) {
+				if (inList.contains(entry.getKey())) {
+					nbProb[0] += Math.log(entry.getValue());
+				} else {
+					nbProb[0] += Math.log((1.0 - entry.getValue()));
 				}
-				if (probFV2.get(s) != null) {
-					if (nbSet[2]) {
-						nbProb[2] += Math.log(probFV2.get(s));
-					} else {
-						nbProb[2] = Math.log(probFV2.get(s));
-						nbSet[2] = true;
-					}
-					// Inverse probability
-					if (nbSet[3]) {
-						nbProb[3] += Math.log((1.0 - probFV2.get(s)));
-					} else {
-						nbProb[3] = Math.log(1.0 - probFV2.get(s));
-						nbSet[3] = true;
-					}
+			}
+			for (Map.Entry<String, Double> entry : probFV2.entrySet()) {
+				if (inList.contains(entry.getKey())) {
+					nbProb[1] += Math.log(entry.getValue());
+				} else {
+					nbProb[1] += Math.log((1.0 - entry.getValue()));
 				}
-				if (probFV3.get(s) != null) {
-					if (nbSet[4]) {
-						nbProb[4] += Math.log(probFV3.get(s));
-					} else {
-						nbProb[4] = Math.log(probFV3.get(s));
-						nbSet[4] = true;
-					}
-					// Inverse probability
-					if (nbSet[5]) {
-						nbProb[5] += Math.log((1.0 - probFV3.get(s)));
-					} else {
-						nbProb[5] = Math.log(1.0 - probFV3.get(s));
-						nbSet[5] = true;
-					}
+			}
+			for (Map.Entry<String, Double> entry : probFV3.entrySet()) {
+				if (inList.contains(entry.getKey())) {
+					nbProb[2] += Math.log(entry.getValue());
+				} else {
+					nbProb[2] += Math.log((1.0 - entry.getValue()));
 				}
-			} // End For-loop
+			}
 
 //			System.out.println(nbProb[0]);
+//			System.out.println(nbProb[1]);
 //			System.out.println(nbProb[2]);
-//			System.out.println(nbProb[4]);
-			
-			if (nbProb[0] > nbProb[2]) {
-				if (nbProb[0] > nbProb[4]) {
-					System.out.println(file.getFileName().toString() + ","
-							+ "DR");
+
+			if (nbProb[0] > nbProb[1]) {
+				if (nbProb[0] > nbProb[2]) {
+					System.out.println(file.getFileName().toString() + "," + "DR");
 					testResults.put(file.getFileName().toString(), "DR");
 				} else {
-					System.out.println(file.getFileName().toString() + ","
-							+ "L");
+					System.out.println(file.getFileName().toString() + "," + "L");
 					testResults.put(file.getFileName().toString(), "L");
 				}
 			} else {
-				if (nbProb[2] > nbProb[4]) {
-					System.out.println(file.getFileName().toString() + ","
-							+ "DT");
+				if (nbProb[1] > nbProb[2]) {
+					System.out.println(file.getFileName().toString() + "," + "DT");
 					testResults.put(file.getFileName().toString(), "DT");
 				} else {
-					System.out.println(file.getFileName().toString() + ","
-							+ "L");
+					System.out.println(file.getFileName().toString() + "," + "L");
 					testResults.put(file.getFileName().toString(), "L");
 				}
 			}
