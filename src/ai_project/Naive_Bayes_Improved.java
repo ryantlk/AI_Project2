@@ -14,7 +14,6 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +24,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Arrays;
+import java.util.Collections;
 
 /**
  *
@@ -240,7 +240,7 @@ public class Naive_Bayes_Improved {
 			}else{
 				classification = "L";
 			}
-			System.out.println(file.getFileName().toString() + "," + classification);
+			System.out.println("Naive Bayes Improved," + file.getFileName().toString() + "," + classification);
 			return FileVisitResult.CONTINUE;
 		}
 	}

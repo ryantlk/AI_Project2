@@ -1,5 +1,5 @@
 /*
- * Multi-variate naive bayes
+ * Multi-variate naive bayes IMPROVED
  * Author: Christopher Dang
  * Date: April 26, 2013
  * File: MVNB.java
@@ -16,12 +16,30 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
-public class MVNB {
+public class MVNBV2 {
+	// Thanks Brian for the list.
+	private final static String[] commonStrings = { "the", "be", "to", "of", "and", "a", "in", "that", "have", "i",
+			"it", "for", "not", "on", "with", "he", "as", "you", "do", "at", "this", "but", "his", "by", "from",
+			"they", "we", "say", "her", "she", "or", "an", "will", "my", "one", "all", "would", "there", "their",
+			"what", "so", "up", "out", "if", "about", "who", "get", "which", "go", "me", "when", "make", "can", "like",
+			"time", "no", "just", "him", "know", "take", "people", "into", "year", "your", "good", "some", "could",
+			"them", "see", "other", "than", "then", "now", "look", "only", "come", "its", "over", "think", "also",
+			"back", "after", "use", "two", "how", "our", "work", "first", "well", "way", "even", "new", "want",
+			"because", "any", "these", "give", "day", "most", "us", "oregon", "washington", "said", "under", "hereby",
+			"person", "shall", "such", "may", "are", "number", "date", ",above", "county", "state", "law", "due" };
+
 	private Path testResultFilePath;
 	private String[] trainDirPath;
 	private String testDirPath;
@@ -37,8 +55,10 @@ public class MVNB {
 	private int[] numFile1;
 	private int[] numFile2;
 	private int[] numFile3;
+	
+	private int numEntries;
 
-	public MVNB(String p1, String p2, String p3, String p4) {
+	public MVNBV2(String p1, String p2, String p3, String p4) {
 		this.trainDirPath = new String[3];
 		this.trainDirPath[0] = p1;
 		this.trainDirPath[1] = p2;
@@ -53,6 +73,8 @@ public class MVNB {
 		this.numFile1 = new int[1];
 		this.numFile2 = new int[1];
 		this.numFile3 = new int[1];
+		
+		this.numEntries = 0;
 	}
 
 	public void train() throws IOException {
@@ -66,6 +88,76 @@ public class MVNB {
 		Files.walkFileTree(Paths.get(trainDirPath[1]), fileprocessor2);
 		FileVisitor<Path> fileprocessor3 = new TrainFiles(numFile3, boolFV3);
 		Files.walkFileTree(Paths.get(trainDirPath[2]), fileprocessor3);
+
+		Iterator<Entry<String, Integer>> itr1 = boolFV1.entrySet().iterator();
+		while (itr1.hasNext()) {
+			Entry<String, Integer> entry = (Map.Entry<String, Integer>) itr1.next();
+			if (pruneEntry(entry)) {
+				itr1.remove();
+			}
+		}
+		Iterator<Entry<String, Integer>> itr2 = boolFV2.entrySet().iterator();
+		// Prune entries
+		while (itr2.hasNext()) {
+			Entry<String, Integer> entry = (Map.Entry<String, Integer>) itr2.next();
+			if (pruneEntry(entry)) {
+				itr2.remove();
+			}
+		}
+		Iterator<Entry<String, Integer>> itr3 = boolFV3.entrySet().iterator();
+		while (itr3.hasNext()) {
+			Entry<String, Integer> entry = (Map.Entry<String, Integer>) itr3.next();
+			if (pruneEntry(entry)) {
+				itr3.remove();
+			}
+		}
+
+		// Sort by value to get same size vectors
+		boolFV1 = MVNBV2.sortByValue(boolFV1);
+		boolFV2 = MVNBV2.sortByValue(boolFV2);
+		boolFV3 = MVNBV2.sortByValue(boolFV3);
+		int sSize = boolFV1.size();
+		if (sSize > boolFV2.size()) {
+			sSize = boolFV2.size();
+		}
+		if (sSize > boolFV2.size()) {
+			sSize = boolFV2.size();
+		}
+		// VERY IMPORTANT VALUE - HAND ADJUST TO GET GOOD PERFORMANCE
+		// HAND-ADJUST to
+		if (sSize > numEntries && numEntries != 0) {
+			sSize = numEntries;
+		}
+		
+		int i = 0;
+		// Remove vectors that have more than the smallest number of vectors
+		Iterator<Entry<String, Integer>> itr4 = boolFV1.entrySet().iterator();
+		while (itr4.hasNext()) {
+			itr4.next();
+			i++;
+			if (i > sSize) {
+				itr4.remove();
+			}
+		}
+		i = 0;
+		Iterator<Entry<String, Integer>> itr5 = boolFV2.entrySet().iterator();
+		while (itr5.hasNext()) {
+			itr5.next();
+			i++;
+			if (i > sSize) {
+				itr5.remove();
+			}
+		}
+		i = 0;
+		Iterator<Entry<String, Integer>> itr6 = boolFV3.entrySet().iterator();
+		while (itr6.hasNext()) {
+			itr6.next();
+			i++;
+			if (i > sSize) {
+				itr6.remove();
+			}
+		}
+		// End of sorting and removing extra items
 
 		// + 1.0 numerator and +2.0 denominator Laplace smoothing and avoiding
 		// log 0;
@@ -117,25 +209,64 @@ public class MVNB {
 		System.out.println((double) right / (double) (right + wrong));
 	}
 
+	public void setNumEntries(int numEntries) {
+		this.numEntries = numEntries;
+	}
+	
 	void printTestResults(Map<String, String> testResults) {
 		for (Map.Entry<String, String> entry : testResults.entrySet()) {
 			System.out.println(entry.getKey() + "," + entry.getValue());
 		}
 	}
-
+	
 	void outputTestResults(Map<String, String> testResults) throws IOException {
-		java.io.File file = new java.io.File("./MVNB_results.txt");
+		java.io.File file = new java.io.File("./MVNBV2_results.txt");
 		file.createNewFile();
 		PrintWriter pw = new PrintWriter(file);
 		for (Map.Entry<String, String> entry : testResults.entrySet()) {
-			pw.println("MVNB," + entry.getKey() + "," + entry.getValue());
+			pw.println("MVNBV2," + entry.getKey() + "," + entry.getValue());
 		}
 		pw.close();
 	}
+	
+	boolean pruneEntry(Entry<String, Integer> entry) {
+		if (Arrays.asList(commonStrings).contains(entry.getKey())) {
+			return true;
+		}
+		if (entry.getValue() <= 2) {
+			return true;
+		}
+		if (entry.getKey().length() <= 2) {
+			return true;
+		}
+
+		return false;
+	}
+	
+	// Comparator source from user: gtgaxolia at
+	// http://stackoverflow.com/questions/12738216/sort-hashmap-with-duplicate-values
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static Map<String, Integer> sortByValue(Map<String, Integer> map) {
+		List list = new LinkedList(map.entrySet());
+		Collections.sort(list, new Comparator() {
+			@Override
+			public int compare(Object o1, Object o2) {
+				return ((Comparable) ((Map.Entry) (o2)).getValue()).compareTo(((Map.Entry) (o1)).getValue());
+			}
+		});
+		Map result = new LinkedHashMap();
+		for (Iterator it = list.iterator(); it.hasNext();) {
+			Map.Entry entry = (Map.Entry) it.next();
+			result.put(entry.getKey(), entry.getValue());
+		}
+		return result;
+	}
+
+	// End comparator source
+
 	/*
 	 * TrainFiles
 	 */
-
 	static class TrainFiles extends SimpleFileVisitor<Path> {
 		private int[] numFile;
 		private Map<String, Integer> boolFV;
@@ -276,6 +407,5 @@ public class MVNB {
 
 			return FileVisitResult.CONTINUE;
 		}
-		
 	}
 }
